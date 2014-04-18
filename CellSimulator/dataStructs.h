@@ -13,6 +13,7 @@ public:
     point(double px, double py, double pz);
     point();
     point(pointArray &p);
+    double& operator[](int i);
 };
 
 class pointArray
@@ -30,13 +31,10 @@ public:
 class collisionInfo
 {
 public:
-    molecule* m;
-    double distanceAtMinPoint;
+    molecule* m; //collision with this molecule
     double t;
-    double sumDiffXVel;
-    double sumVelSquared;
-    double sumDiffSquared;
-    collisionInfo(molecule *pm, double dmp, double pt, double sDxV, double sVS, double sDS);
+    molecule *whatCollided; //collision by this molecule - this one was the one in the loop, trying to move, and couldny
+    collisionInfo(molecule *pm, double pt, molecule *wc);
     collisionInfo();
 };
 #endif	/* DATASTRUCTS_H */

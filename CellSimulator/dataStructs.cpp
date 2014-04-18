@@ -19,6 +19,17 @@ point::point(pointArray& p)
     y=p[1];
     z=p[2];
 }
+
+double& point::operator [](int i)
+{
+    if(i==0)
+        return x;
+    else if(i==1)
+        return y;
+    else if(i==2)
+        return z;
+}
+
 pointArray::pointArray(double px, double py, double pz)
 {
     p[0]=px;
@@ -28,7 +39,7 @@ pointArray::pointArray(double px, double py, double pz)
 
 pointArray::pointArray(point from)
 {
-    pointArray(from.x, from.y, from.z);
+    *this=pointArray(from.x, from.y, from.z);
 }
 
 pointArray::pointArray()
@@ -55,18 +66,15 @@ double& pointArray::operator [](int i)
     return p[i];
 }
 
-collisionInfo::collisionInfo(molecule* pm, double dmp, double pt, double sDxV, double sVS, double sDS)
+collisionInfo::collisionInfo(molecule* pm, double pt, molecule *wc)
 {
     m = pm;
-    distanceAtMinPoint = dmp;
     t = pt;
-    sumDiffXVel = sDxV;
-    sumVelSquared = sVS;
-    sumDiffSquared = sDS;
+    whatCollided = wc;
 }
 
 collisionInfo::collisionInfo()
 {
-    m = NULL;
-    distanceAtMinPoint = t = sumDiffSquared = sumDiffXVel = sumVelSquared = 0;
+    m = whatCollided = NULL;
+    t=9999999;
 }

@@ -6,8 +6,9 @@
 
 using namespace std;
 
-#define EPSILON 0.0001
+#define EPSILON 0.00001
 #define PROTEINCANFUNCTIONRADIUSFRACTION 1/4
+#define VELOCITYRETAINEDINCOLLISION 0.99
 
 double square(double val);
 

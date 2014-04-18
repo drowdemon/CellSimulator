@@ -17,21 +17,21 @@ using namespace std;
     X(unsigned long long, id) \
     X(int, cellContainer) \
     X(int, moleculeType) \
-    X(point, velocity) \
     X(double, radius) \
-    X(double, mass)
+    X(double, mass) \
+    X(int, indexMultiMolecule)
 
 class molecule
 {
 public:
-    int index;
+    int index; //in allMolecules in the containing cell
     point position;
     unsigned long long id;
-    int cellContainer;
+    int cellContainer; //what cell contains it
     int moleculeType; //0 = protein, 1 = DNA, 2 = RNA
-    point velocity;
     double radius; //all molecules are spheres. Yes, DNA is spherical.
     double mass;
+    int indexMultiMolecule; //index of the containing multiMolecule
     
     vector<int> bondedWith; //indexes of bonds
     vector<set<unsigned long long> > bondsNaturallyWith; //a list of possible bonds. Each one represents one possible bond. The length of this is the total number of bonds there can be.
@@ -45,8 +45,10 @@ public:
 protected:
     vector<molecule*>* checkAround(double searchRadius);
 public:
-    bool bond(int indexWithWhat);
-    bool bond(molecule *m);
+    int bond(molecule *m);
+    void teleport(point p); //instantly teleport to the location p
+    void getTouchingPointsHelper(vector<point> &p, pointArray center, int axis);
+    void getTouchingPoints(vector<point> &p, point center);
 };
 
 #endif	/* MOLECULE_H */

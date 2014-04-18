@@ -12,7 +12,7 @@ using namespace std;
     X(int, type) \
     X(bool, active) 
 
-class protein : molecule
+class protein : public molecule
 {
 public:
     int type; //0=structural, 1=activator, 2=repressor, 3=transporter, 4=create bond, 5=destroy bond, 6=channel, 7=gated channel, 8=digestor, SPECIAL: 9=DNA polymerase, 10=RNA polymerase, 11=ribosome
@@ -28,7 +28,7 @@ public:
 #define X(type, name) \
     type p_ ## name,
     
-    protein(LISTVARPROTEIN LISTVARMOLECULE bool extra);
+    protein(LISTVARPROTEIN LISTVARMOLECULE bool extra=true);
 #undef X
     //end constructor
     unsigned long long getID();

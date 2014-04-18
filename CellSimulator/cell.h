@@ -22,7 +22,9 @@ public:
 private:
     void solve2dLine(double intercept1, double intercept2, double start, double velocity1, double velocity2, double velocity3, vector<pointArray> &out);
     bool addGridCubes(unsigned int counter, int flagWhere, pointArray vel, pointArray curLoc, vector<point> &gridCubes);
-    vector<point> *getGridCubes(point *vel, point *pos); //must delete return value when this is called!!!
+    void getGridCubesHelper(point *vel, point *pos, vector<point> *gridCubes); //must delete return value when this is called!!!
+    vector<point>* getGridCubes(point *vel, point *pos, molecule *m);
+    void checkCollisionAndMove(unsigned int i, double timeRemaining, int prevCollidedWith=-1);
 };
 
 #endif	/* WORLD_H */

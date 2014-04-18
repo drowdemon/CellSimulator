@@ -13,10 +13,13 @@ public:
     double mass;
     point velocity;
     point centerOfMass;
-    multiMolecule(double m, point v, point cm);
-    void collision(multiMolecule *m);
+    int cellContainer;
+    multiMolecule(double m, point v, point cm, int cc);
+    void elasticCollision(multiMolecule *m);
+    void inElasticCollision(point otherVelocity, double otherMass, double myMass);
     point rotate(point v, point &rotateToAxes);
     point unRotate(point v, point &rotateToAxes);
+    void transport(point &displacement);
 };
 
 #endif	/* MULTIMOLECULE_H */

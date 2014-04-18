@@ -9,7 +9,7 @@ using namespace std;
 
 #define X(type, name) \
     p_ ## name, 
-protein::protein(int p_type, bool p_active, int p_index, point p_position, unsigned long long p_id, int p_cellContainer, int p_moleculeType, point p_velocity, double p_radius, double p_mass, bool extra) : molecule(LISTVARMOLECULE extra)
+protein::protein(int p_type, bool p_active, int p_index, point p_position, unsigned long long p_id, int p_cellContainer, int p_moleculeType, double p_radius, double p_mass, int p_indexMultiMolecule, bool extra) : molecule(LISTVARMOLECULE extra)
 {
 #undef X
     
