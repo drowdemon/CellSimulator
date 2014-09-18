@@ -33,9 +33,10 @@ public:
     double mass;
     int indexMultiMolecule; //index of the containing multiMolecule
     
-    vector<int> bondedWith; //indexes of bonds
-    vector<set<unsigned long long> > bondsNaturallyWith; //a list of possible bonds. Each one represents one possible bond. The length of this is the total number of bonds there can be.
-    vector<bool> usedBond; //matches size of bondsNaturallyWith, says whether that bond was filled.
+    vector<bondData> bondedWith; //indexes of bonds
+    vector<bondSpot> possibleBonds;
+    //vector<set<unsigned long long> > bondsNaturallyWith; //a list of possible bonds. Each one represents one possible bond. The length of this is the total number of bonds there can be.
+    //vector<bool> usedBond; //matches size of bondsNaturallyWith, says whether that bond was filled.
 #define X(type, name) \
     type p_ ## name,
     
@@ -45,7 +46,7 @@ public:
 protected:
     vector<molecule*>* checkAround(double searchRadius);
 public:
-    int bond(molecule *m);
+    int bond(molecule *m, point contact);
     void teleport(point p); //instantly teleport to the location p
     void getTouchingPointsHelper(vector<point> &p, pointArray center, int axis);
     void getTouchingPoints(vector<point> &p, point center);

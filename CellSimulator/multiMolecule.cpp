@@ -4,10 +4,10 @@
 
 multiMolecule::multiMolecule(double m, point v, point cm, int cc)
 {
-    mass=m;
-    velocity=v;
+    mass = m;
+    velocity = v;
     centerOfMass = cm;
-    cellContainer=cc;
+    cellContainer = cc;
 }
 
 void multiMolecule::elasticCollision(multiMolecule *m)
@@ -32,11 +32,11 @@ void multiMolecule::elasticCollision(multiMolecule *m)
     point velocityPerpOther(m->velocity.x-velocityParallelOther.x, m->velocity.y-velocityParallelOther.y, m->velocity.z-velocityParallelOther.z);
     
     velocity.x = VELOCITYRETAINEDINCOLLISION*((velocityParallel.x*(mass - m->mass) + 2*m->mass*velocityParallelOther.x)/(mass + m->mass)+velocityPerp.x); //multiplied by constant so as to lose some energy upon collision
-    m->velocity.x = VELOCITYRETAINEDINCOLLISION*(velocityParallelOther.x*(m->mass - mass) + 2*mass*velocityParallel.x)/(mass + m->mass);
+    m->velocity.x = VELOCITYRETAINEDINCOLLISION*((velocityParallelOther.x*(m->mass - mass) + 2*mass*velocityParallel.x)/(mass + m->mass)+velocityPerpOther.x);
     velocity.y = VELOCITYRETAINEDINCOLLISION*((velocityParallel.y*(mass - m->mass) + 2*m->mass*velocityParallelOther.y)/(mass + m->mass)+velocityPerp.y);
-    m->velocity.y = VELOCITYRETAINEDINCOLLISION*(velocityParallelOther.y*(m->mass - mass) + 2*mass*velocityParallel.y)/(mass + m->mass);
+    m->velocity.y = VELOCITYRETAINEDINCOLLISION*((velocityParallelOther.y*(m->mass - mass) + 2*mass*velocityParallel.y)/(mass + m->mass)+velocityPerpOther.y);
     velocity.z = VELOCITYRETAINEDINCOLLISION*((velocityParallel.z*(mass - m->mass) + 2*m->mass*velocityParallelOther.z)/(mass + m->mass)+velocityPerp.z);
-    m->velocity.z = VELOCITYRETAINEDINCOLLISION*(velocityParallelOther.z*(m->mass - mass) + 2*mass*velocityParallel.z)/(mass + m->mass);
+    m->velocity.z = VELOCITYRETAINEDINCOLLISION*((velocityParallelOther.z*(m->mass - mass) + 2*mass*velocityParallel.z)/(mass + m->mass)+velocityPerpOther.z);
 }
 
 point multiMolecule::rotate(point v, point &rotateToAxes)

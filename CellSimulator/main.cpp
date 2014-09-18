@@ -23,6 +23,8 @@ using namespace std;
 //TODO make bondsNaturallyWith contain information on where on the molecule the bond can occur, which would consist of a vector of points (from the center of the molecule) and a vector of radiuses around that point within which a bond can be made. 
     //If molecule A can bond with 2 molecules of B, just have B in the entry twice, like you would now, with 1 pt each, not with both pts on each. But if A bonds with 1 C molecule at either of 2 locations, but both in the vector. Anywhere on the cell: pt=(0,0,0), radius = molecule_radius + epsilon
 
+void createProtein(double mass, point velocity, point position, double radius, unsigned long long id);
+
 int WIDTH;
 int HEIGHT;
 int mainWindow;
@@ -156,44 +158,27 @@ void init()
         }
     }
     
-    allCells[0].allMolecules.push_back(new protein(0, true, 0, point(22, 20, 24), 0, 0, TYPE_PROTEIN, .3, .5, 0));
-    //allCells[0].allMolecules[0]->bondsNaturallyWith.push_back(set<unsigned long long>());
-    //allCells[0].allMolecules[0]->bondsNaturallyWith[0].insert(0);
-    //allCells[0].allMolecules[0]->usedBond.push_back(false);
-    allCells[0].allMultiMolecules.push_back(new multiMolecule(.5, point(-.1,0,-.2), point(22,20,24), 0));
-    allCells[0].allMultiMolecules[0]->molecules.push_back(0);
+    createProtein(1,point(-.1,0,0),point(22,20,20),.3,0);
+    allCells[0].allMolecules[0]->possibleBonds.push_back(bondSpot(set<unsigned long long>(), false, point(-allCells[0].allMolecules[0]->radius*.8,0,0), allCells[0].allMolecules[0]->radius*.4));
+    allCells[0].allMolecules[0]->possibleBonds[0].bondsNaturallyWith.insert(0);
     
-    allCells[0].allMolecules.push_back(new protein(0, true, 1, point(20, 20, 20), 0, 0, TYPE_PROTEIN, .3, 1, 1));
-    allCells[0].allMolecules[1]->bondsNaturallyWith.push_back(set<unsigned long long>());
-    allCells[0].allMolecules[1]->bondsNaturallyWith[0].insert(0);
-    allCells[0].allMolecules[1]->usedBond.push_back(false);
-    allCells[0].allMultiMolecules.push_back(new multiMolecule(1, point(0,0,0), point(20,20,20), 0));
-    allCells[0].allMultiMolecules[1]->molecules.push_back(1);
+    createProtein(1,point(.1,0,0),point(20,20,20),.3,0); //top left
+    allCells[0].allMolecules[1]->possibleBonds.push_back(bondSpot(set<unsigned long long>(), false, point(allCells[0].allMolecules[0]->radius*.8,0,0), allCells[0].allMolecules[1]->radius*.4));
+    allCells[0].allMolecules[1]->possibleBonds[0].bondsNaturallyWith.insert(0);
+    allCells[0].allMolecules[1]->possibleBonds.push_back(bondSpot(set<unsigned long long>(), false, point(0,0,0), allCells[0].allMolecules[1]->radius*(1+EPSILON)));
+    allCells[0].allMolecules[1]->possibleBonds[1].bondsNaturallyWith.insert(1);
+    
+    createProtein(1,point(0,0,-.15),point(20.6,20,25),.3,1);
+    ((protein*)(allCells[0].allMolecules[2]))->active=true;
+    ((protein*)(allCells[0].allMolecules[2]))->type=5;
+    ((protein*)(allCells[0].allMolecules[2]))->actOnID.insert(0);
+    ((protein*)(allCells[0].allMolecules[2]))->actOnIDB.insert(0);
+    allCells[0].allMolecules[2]->possibleBonds.push_back(bondSpot(set<unsigned long long>(), false, point(0,0,0), allCells[0].allMolecules[2]->radius*(1+EPSILON)));
+    allCells[0].allMolecules[2]->possibleBonds[0].bondsNaturallyWith.insert(0);
     
     for(unsigned int iii=0; iii<allCells[0].allMolecules.size(); iii++)
     {
-        //pointArray temp(0,0,0);
         vector<point> currPts;
-        /*for(int i=0; i<3; i++)
-        {
-            for(int j=-1; j<=1; j+=2)
-            {
-                temp[i]=j;
-                currPts.push_back(point(allCells[0].allMolecules[iii]->position.x+allCells[0].allMolecules[iii]->radius*temp[0], allCells[0].allMolecules[iii]->position.y+allCells[0].allMolecules[iii]->radius*temp[1], allCells[0].allMolecules[iii]->position.z+allCells[0].allMolecules[iii]->radius*temp[2]));
-            }
-            temp[i]=0;
-        }
-        for(unsigned int i=0; i<currPts.size(); i++) //remove duplicates
-        {
-            for(unsigned int j=i+1; j<currPts.size(); j++)
-            {
-                if((int)currPts[i].x==(int)currPts[j].x && (int)currPts[i].y==(int)currPts[j].y && (int)currPts[i].z==(int)currPts[j].z) //same grid cube
-                {
-                    currPts.erase(currPts.begin()+j);
-                    j--;
-                }
-            }
-        }*/
         allCells[0].allMolecules[iii]->getTouchingPoints(currPts, allCells[0].allMolecules[iii]->position);
         
         for(unsigned int k=0; k<currPts.size(); k++)
@@ -201,6 +186,13 @@ void init()
             allCells[0].volume[(int)currPts[k].z][(int)currPts[k].y][(int)currPts[k].x].push_back(iii);
         }
     }
+}
+
+void createProtein(double mass, point velocity, point position, double radius, unsigned long long id)
+{
+    allCells[0].allMolecules.push_back(new protein(0, true, point(), allCells[0].allMolecules.size(), position, id, 0, TYPE_PROTEIN, radius, mass, allCells[0].allMultiMolecules.size()));
+    allCells[0].allMultiMolecules.push_back(new multiMolecule(mass, velocity, position, 0));
+    allCells[0].allMultiMolecules[allCells[0].allMultiMolecules.size()-1]->molecules.push_back(allCells[0].allMolecules.size()-1);
 }
 
 int main(int argc, char **argv)
@@ -229,9 +221,3 @@ int main(int argc, char **argv)
     glutMainLoop();
     return 0;
 }
-
-/*int main()
-{
-    srand(time(NULL));
-    return 0;
-}*/

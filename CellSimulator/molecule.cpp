@@ -41,49 +41,62 @@ vector<molecule*>* molecule::checkAround(double searchRadius) //return molecules
     }
     return ret;
 }
-int molecule::bond(molecule *m) //make sure this isn't called when it shouldn't be. Use with great care. It should only be called when molecules actually collide, or when an enzymatic protein bonds things together. It makes no checks on the legality of the bond based on position/velocity, only on type of bond
+int molecule::bond(molecule *m, point contact) //make sure this isn't called when it shouldn't be. Use with great care. It should only be called when molecules actually collide, or when an enzymatic protein bonds things together. It makes no checks on the legality of the bond based on position/velocity, only on type of bond
 {
-    for(unsigned int i=0; i<bondsNaturallyWith.size(); i++)
+    for(unsigned int i=0; i<possibleBonds.size(); i++)
     {
-        if(!usedBond[i] && bondsNaturallyWith[i].find(m->id)!=bondsNaturallyWith[i].end()) //can bond with this type of molecule, and didn't already
+        if(!possibleBonds[i].inUse && possibleBonds[i].bondsNaturallyWith.find(m->id)!=possibleBonds[i].bondsNaturallyWith.end()) //can bond with this type of molecule, and didn't already
         {
-            for(unsigned int j=0; j<m->bondsNaturallyWith.size(); j++)
+            if(square(contact.x-(position.x+possibleBonds[i].pointBond.x))+square(contact.y-(position.y+possibleBonds[i].pointBond.y))+square(contact.z-(position.z+possibleBonds[i].pointBond.z)) < square(possibleBonds[i].radiusBond)) //within area that can be bonded to
             {
-                if(!m->usedBond[j] && m->bondsNaturallyWith[j].find(id)!=m->bondsNaturallyWith[j].end()) //the molecule I'm bonding with has an empty slot
+                for(unsigned int j=0; j<m->possibleBonds.size(); j++)
                 {
-                    //start bonding
-                    bondedWith.push_back(m->index);
-                    m->bondedWith.push_back(index);
-                    usedBond[i]=true;
-                    m->usedBond[j]=true;
-                    molecule *smaller = m;
-                    molecule *larger = this;
-                    if(allCells[cellContainer].allMultiMolecules[indexMultiMolecule]->molecules.size() < allCells[cellContainer].allMultiMolecules[m->indexMultiMolecule]->molecules.size())
-                    {//my multimolecule is smaller than the other cells
-                        smaller = this;
-                        larger = m;
-                    }
-                    multiMolecule *smallMulti = allCells[cellContainer].allMultiMolecules[smaller->indexMultiMolecule];
-                    multiMolecule *largeMulti = allCells[cellContainer].allMultiMolecules[larger->indexMultiMolecule];
-                    largeMulti->centerOfMass.x*=mass;
-                    largeMulti->centerOfMass.y*=mass;
-                    largeMulti->centerOfMass.z*=mass;
-                    for(unsigned int k=0; k<smallMulti->molecules.size(); k++)
+                    if(!m->possibleBonds[j].inUse && m->possibleBonds[j].bondsNaturallyWith.find(id)!=m->possibleBonds[j].bondsNaturallyWith.end()) //the molecule I'm bonding with has an empty slot
                     {
-                        largeMulti->molecules.push_back(smallMulti->molecules[k]);
-                        largeMulti->mass+=allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->mass;
-                        largeMulti->centerOfMass.x+=allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->position.x*allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->mass;
-                        largeMulti->centerOfMass.y+=allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->position.y*allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->mass;
-                        largeMulti->centerOfMass.z+=allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->position.z*allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->mass;
+                        if(square(contact.x-(m->position.x+m->possibleBonds[j].pointBond.x))+square(contact.y-(m->position.y+m->possibleBonds[j].pointBond.y))+square(contact.z-(m->position.z+m->possibleBonds[j].pointBond.z)) < square(m->possibleBonds[j].radiusBond)) //within area that can be bonded to
+                        {
+                            //start bonding
+                            bondedWith.push_back(bondData(m->index, point(contact.x-position.x, contact.y-position.y, contact.z-position.z)));
+                            m->bondedWith.push_back(bondData(index, point(contact.x-m->position.x, contact.y-m->position.y, contact.z-m->position.z)));
+                            possibleBonds[i].inUse=true;
+                            m->possibleBonds[i].inUse=true;
+                            molecule *smaller = m;
+                            molecule *larger = this;
+                            if(allCells[cellContainer].allMultiMolecules[indexMultiMolecule]->molecules.size() < allCells[cellContainer].allMultiMolecules[m->indexMultiMolecule]->molecules.size())
+                            {//my multimolecule is smaller than the other cells
+                                smaller = this;
+                                larger = m;
+                            }
+                            multiMolecule *smallMulti = allCells[cellContainer].allMultiMolecules[smaller->indexMultiMolecule];
+                            multiMolecule *largeMulti = allCells[cellContainer].allMultiMolecules[larger->indexMultiMolecule];
+                            largeMulti->centerOfMass.x*=mass;
+                            largeMulti->centerOfMass.y*=mass;
+                            largeMulti->centerOfMass.z*=mass;
+                            for(unsigned int k=0; k<smallMulti->molecules.size(); k++)
+                            {
+                                largeMulti->molecules.push_back(smallMulti->molecules[k]);
+                                largeMulti->mass+=allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->mass;
+                                largeMulti->centerOfMass.x+=allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->position.x*allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->mass;
+                                largeMulti->centerOfMass.y+=allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->position.y*allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->mass;
+                                largeMulti->centerOfMass.z+=allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->position.z*allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->mass;
+                            }
+                            largeMulti->centerOfMass.x/=largeMulti->mass;
+                            largeMulti->centerOfMass.y/=largeMulti->mass;
+                            largeMulti->centerOfMass.z/=largeMulti->mass;
+                            
+                            int smallMultiIndex = smaller->indexMultiMolecule;
+                            for(unsigned int k=0; k<smallMulti->molecules.size(); k++)
+                            {
+                                allCells[cellContainer].allMolecules[smallMulti->molecules[k]]->indexMultiMolecule=larger->indexMultiMolecule;
+                            }
+                            
+                            //allCells[cellContainer].allMultiMolecules.erase(allCells[cellContainer].allMultiMolecules.begin()+smaller->indexMultiMolecule);
+                            delete smallMulti;//allCells[cellContainer].allMultiMolecules[smaller->indexMultiMolecule];
+                            allCells[cellContainer].allMultiMolecules[smallMultiIndex] = NULL;
+                            allCells[cellContainer].deletedMultiMolecules.push(smallMultiIndex);
+                            return larger->indexMultiMolecule;
+                        }
                     }
-                    largeMulti->centerOfMass.x/=mass;
-                    largeMulti->centerOfMass.y/=mass;
-                    largeMulti->centerOfMass.z/=mass;
-                    
-                    //allCells[cellContainer].allMultiMolecules.erase(allCells[cellContainer].allMultiMolecules.begin()+smaller->indexMultiMolecule);
-                    delete allCells[cellContainer].allMultiMolecules[smaller->indexMultiMolecule];
-                    allCells[cellContainer].allMultiMolecules[smaller->indexMultiMolecule] = NULL;
-                    return larger->indexMultiMolecule;
                 }
             }
         }

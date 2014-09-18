@@ -2,6 +2,7 @@
 #define	WORLD_H
 
 #include <vector>
+#include <stack>
 #include "protein.h"
 //#include "cytosol.h"
 
@@ -15,6 +16,7 @@ public:
     vector<molecule*> allMolecules;
     vector<multiMolecule*> allMultiMolecules;
     vector<vector<vector<vector<int> > > > volume; //3 spatial dimensions and then all of the molecules in that 1x1x1 grid cube
+    stack<int> deletedMultiMolecules;
     //vector<vector<vector<cytosol> > > volume;
     int index;
     cell(int i);

@@ -19,6 +19,17 @@ void cell::timeStep() //TODO finish
         if(abs(allMultiMolecules[i]->velocity.x)<EPSILON && abs(allMultiMolecules[i]->velocity.y)<EPSILON && abs(allMultiMolecules[i]->velocity.z)<EPSILON) //velocity is 0
             continue; //not moving! thank god.
         checkCollisionAndMove(i, 1.0);
+        if(!allMultiMolecules[i])
+            continue;
+        for(unsigned int j=0; j<allMultiMolecules[i]->molecules.size(); j++)
+        {
+            if(allMolecules[allMultiMolecules[i]->molecules[j]]->moleculeType==TYPE_PROTEIN)
+            {
+                ((protein*)(allMolecules[allMultiMolecules[i]->molecules[j]])->*(((protein*)(allMolecules[allMultiMolecules[i]->molecules[j]]))->act[((protein*)(allMolecules[allMultiMolecules[i]->molecules[j]]))->type]))();
+            }
+            if(!allMultiMolecules[i])
+                break;
+        }
     }
 }
 
@@ -133,8 +144,6 @@ void cell::checkCollisionAndMove(unsigned int i, double timeRemaining, int prevC
             {
                 for(unsigned int k=0; k<volume[(int)(*gridPoints)[j].z][(int)(*gridPoints)[j].y][(int)(*gridPoints)[j].x].size(); k++)
                 {
-                    if(volume[(int)(*gridPoints)[j].z][(int)(*gridPoints)[j].y][(int)(*gridPoints)[j].x].size()>1)
-                        cout << "h" << endl;
                     int testingIndex = volume[(int)(*gridPoints)[j].z][(int)(*gridPoints)[j].y][(int)(*gridPoints)[j].x][k];
                     bool dead = false;
                     for(unsigned int h=0; h<allMultiMolecules[i]->molecules.size(); h++)
@@ -189,8 +198,12 @@ void cell::checkCollisionAndMove(unsigned int i, double timeRemaining, int prevC
                         //solve the quadratic for when the molecules just barely touch
                         double quadraticSqrt = sqrt(4*(square(sumDiffXVel) - sumVelSquared*(sumDiffSquared - neededDistSquared)));
                         double answerT = 2*sumDiffXVel;
-                        if(answerT-quadraticSqrt > 0)
+                        if(answerT-quadraticSqrt + TINYEPSILON> 0)
+                        {
                             answerT-=quadraticSqrt;
+                            if(answerT<0)
+                                answerT+=TINYEPSILON;
+                        }
                         else
                             answerT+=quadraticSqrt;
                         answerT/=(2*sumVelSquared); //at this t, the molecules are tangent
@@ -215,15 +228,32 @@ void cell::checkCollisionAndMove(unsigned int i, double timeRemaining, int prevC
     if(closestCollision.m!=NULL) //if closest collision exists
     {
         //Finally, handling the actual collision
-        point otherV(allMultiMolecules[closestCollision.m->indexMultiMolecule]->velocity); // for inelastic
-        double otherM = allMultiMolecules[closestCollision.m->indexMultiMolecule]->mass; // for inelastic
-        double myMass = allMultiMolecules[i]->mass;
+        point otherV;
+        double otherM; //these variables are not named well. too bad.
+        double myMass;
+        if(allMultiMolecules[closestCollision.m->indexMultiMolecule]->molecules.size() <= allMultiMolecules[i]->molecules.size())
+        {
+            otherV = allMultiMolecules[closestCollision.m->indexMultiMolecule]->velocity; // for inelastic
+            otherM = allMultiMolecules[closestCollision.m->indexMultiMolecule]->mass; // for inelastic
+            myMass = allMultiMolecules[i]->mass;
+        }
+        else
+        {
+            otherV = allMultiMolecules[i]->velocity;
+            otherM = allMultiMolecules[i]->mass;
+            myMass = allMultiMolecules[closestCollision.m->indexMultiMolecule]->mass;
+        }
         point disp = vel;
         disp.x *= closestCollision.t;
         disp.y *= closestCollision.t;
         disp.z *= closestCollision.t;
         allMultiMolecules[i]->transport(disp);
-        int retBond = closestCollision.whatCollided->bond(closestCollision.m);
+        
+        point diffPos(closestCollision.m->position.x-closestCollision.whatCollided->position.x,closestCollision.m->position.y-closestCollision.whatCollided->position.y,closestCollision.m->position.z-closestCollision.whatCollided->position.z);
+        double mag = sqrt(square(diffPos.x) + square(diffPos.y) + square(diffPos.z));
+        point normXrad(diffPos.x/mag*closestCollision.whatCollided->radius, diffPos.y/mag*closestCollision.whatCollided->radius, diffPos.z/mag*closestCollision.whatCollided->radius);
+        
+        int retBond = closestCollision.whatCollided->bond(closestCollision.m, point(closestCollision.whatCollided->position.x+normXrad.x,closestCollision.whatCollided->position.y+normXrad.y,closestCollision.whatCollided->position.z+normXrad.z));
         if(retBond!=-1) //bonded successfully, inelastic collision
         {
             allMultiMolecules[retBond]->inElasticCollision(otherV, otherM, myMass);

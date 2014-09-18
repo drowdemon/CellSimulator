@@ -28,6 +28,8 @@ double& point::operator [](int i)
         return y;
     else if(i==2)
         return z;
+    else
+        exit(-12);
 }
 
 pointArray::pointArray(double px, double py, double pz)
@@ -77,4 +79,18 @@ collisionInfo::collisionInfo()
 {
     m = whatCollided = NULL;
     t=9999999;
+}
+
+bondSpot::bondSpot(set<unsigned long long> bnw, bool iu, point pb, double rb)
+{
+    bondsNaturallyWith = bnw;
+    inUse = iu;
+    pointBond = pb;
+    radiusBond = rb;
+}
+
+bondData::bondData(int w, point c)
+{
+    with = w;
+    contact = c;
 }
